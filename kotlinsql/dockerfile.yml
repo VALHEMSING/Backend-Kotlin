@@ -1,11 +1,25 @@
+# Imagen base con JDK 21
 FROM eclipse-temurin:21-jdk
-
+  
+  # Crear el directorio de trabajo
 WORKDIR /app
-
-COPY . /app
-
+  
+  # Copiar el wrapper y configuraciones de Maven
+COPY .mvn/ .mvn
+COPY mvnw mvnw
+COPY pom.xml .
+  
+  # Descargar las dependencias (fase separada para cacheo eficiente)
+RUN ./mvnw dependency:go-offline
+  
+  # Copiar el resto del código fuente
+COPY src ./src
+  
+  # Construir el JAR (paquete ejecutable)
 RUN ./mvnw clean package -DskipTests
-
+  
+  # Exponer el puerto 8080 (asegúrate que no uses otro en application.properties)
 EXPOSE 8080
-
+  
+  # Comando para ejecutar el JAR generado
 CMD ["java", "-jar", "target/kotlinsql-0.0.1-SNAPSHOT.jar"]
